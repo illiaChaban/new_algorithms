@@ -1,7 +1,9 @@
-let a = [["A","Q","A","H"], 
- ["A","X","V","W"], 
- ["A","L","T","I"], 
- ["T","T","J","I"]]
+let a = [
+    ["A","Q","A","H"], 
+    ["A","X","V","W"], 
+    ["A","L","T","I"], 
+    ["T","T","J","I"]
+]
 let a_w =["AXOLOTL", 
  "TAXA", 
  "ABA", 
@@ -37,13 +39,12 @@ let c_a = ["GO",
  "GOAT"]
 
 
-
 function wordBoggle(board, words) {
     let possibleWords = [];
     // console.log(words)
     words.forEach( word => {
         let lettersPositions = findLettersPositions(word, board)
-        console.log('WORD: ', word, '*****************')
+        console.log('###################WORD: ', word, '######################')
         canMakeWord(lettersPositions) && possibleWords.push(word);
     })
     possibleWords.sort( (a,b) => a > b ? 1 : -1);
@@ -66,24 +67,57 @@ function findLettersPositions(word, board) {
     return positions;
 }
 
-function canMakeWord(lettersPositions) {
-    // console.log(lettersPositions, '*************')
-    let lastPositions = lettersPositions[0];
-    let previousPositions = [].concat(lettersPositions[0]);
-    let yesWeCan = true;
-    lettersPositions.forEach( (letterPositions, i) => {
-        if ( yesWeCan && i !== 0) {
-            if (letterPositions.length === 0) yesWeCan = false;
-            if (canMoveToNext(lastPositions, letterPositions, previousPositions)) {
-                lastPositions = canMoveToNext(lastPositions, letterPositions, previousPositions);
-                previousPositions = previousPositions.concat(lastPositions)
-            } else {
-                yesWeCan = false;
-            }
+function canMoveToNextPosition(prevPosition, nextPosition) {
+    if (!prevPosition) return true;
+    if (
+        withinOneCell(prevPosition, nextPosition) 
+    ) return true;
+    return false;
+}
+
+function satisfiesConstraint(wordIteration) {
+    let lastPosition;
+    let satisfies = true;
+    // console.log('#######', wordIteration)
+    if (arrayHasEqualObj(wordIteration)) {
+        // console.log('not satisfy => equal obj')
+        return false;
+    }
+    wordIteration.forEach( position => {
+        if (!canMoveToNextPosition(lastPosition, position)) {
+            satisfies = false;
         }
+        lastPosition = position;
     })
-    yesWeCan && console.log('PREV ***', previousPositions)
-    return yesWeCan;
+    // if (!satisfies) console.log('not satisfy => cant move to next')
+    return satisfies;
+}
+
+function getNumOfIterations(lettersPositions) {
+    let iterationsNum = 1;
+    lettersPositions.forEach( (letPositions, i) => {
+        iterationsNum *= letPositions.length;
+    })
+    // console.log(iterationsNum)
+    return iterationsNum;
+}
+
+function canMakeWord(lettersPositions) {
+    let yesWeCan = false;
+    let allPossibleIterations = [];
+    let iterationsNum = getNumOfIterations(lettersPositions);
+    for (let i = 0; i < iterationsNum; i++) {
+        let iterationWord = [];
+        lettersPositions.forEach( (letPositions) => {
+            iterationWord.push(letPositions[i % letPositions.length])
+        })
+        allPossibleIterations.push(iterationWord)
+    }
+    if (arrayHas2EqualArrOfObj(allPossibleIterations)) throw 'array was repeated!!!!'
+    allPossibleIterations.forEach( iteration => {
+        if (satisfiesConstraint(iteration)) yesWeCan = iteration;
+    })
+    return yesWeCan ;
 }
 
 function withinOneCell(position1, position2) {
@@ -112,15 +146,15 @@ function didntMoveThere(nextPosition, previousPositions) {
 }
 
 function doesntInclude(objArr, obj) {
-    let notInclude = true;
+    let notIncludes = true;
     objArr.forEach( object => {
-        let include = true;
+        let match = true;
         Object.keys(object).forEach( key => {
-            if (objArr.key !== obj.key) include = false;
+            if (object[key] !== obj[key]) match = false;
         })
-        if (include) notInclude = false;
+        if (match) notIncludes = false;
     })
-    return notInclude;
+    return notIncludes;
 }
 
 function canMoveToNext(lastPositions, nextPositions, previousPositions) {
@@ -130,15 +164,63 @@ function canMoveToNext(lastPositions, nextPositions, previousPositions) {
             if (
                 withinOneCell(lPos, nPos)
                 && didntMoveThere(nPos, previousPositions) 
-                // && doesntInclude(canMoveToPositions, nPos)
+                && doesntInclude(canMoveToPositions, nPos)
             ) {
                 canMoveToPositions.push(nPos);
             }
         })
     })
+    // console.log('CAN MOVE TO POS: ', canMoveToPositions)
     return canMoveToPositions.length ? canMoveToPositions : false;
+}
+
+function objectsEqual(obj1, obj2) {
+    let equal = true;
+    if (Object.keys(obj1).length !== Object.keys(obj2).length) equal = false;
+    Object.keys(obj1).forEach( key => {
+        if (obj1[key] !== obj2[key]) equal = false;
+    })
+    return equal && obj1;
+}
+
+function arrayHasEqualObj(arrOfObj) {
+    let has = false;
+    arrOfObj.forEach( (obj1, i) => {
+        arrOfObj.forEach( (obj2, j) => {
+            if (i !== j && objectsEqual(obj1, obj2)) {
+                has = true;
+            }
+        })
+    })
+    // console.log(arrOfObj, has)
+    return has;
 }
 
 console.log(a_a, wordBoggle(a, a_w))
 // console.log(b_a, wordBoggle(b, b_w))
 // console.log(c_a, wordBoggle(c, c_w))
+// console.log(d_a, wordBoggle(d, d_w))
+
+
+
+//##################
+function arraysOfObjEqual(arr1, arr2) {
+    let equal = true;
+    arr1.forEach( (obj, i) => {
+        if (!objectsEqual(obj, arr2[i])) equal = false;
+    })
+    return equal;
+}
+
+function arrayHas2EqualArrOfObj(arrArr) {
+    let has = false;
+    arrArr.forEach( (arr1, i) => {
+        arrArr.forEach( (arr2, j) => {
+            if ( 
+                i !== j &&
+                arraysOfObjEqual(arr1, arr2)
+            ) has = true;
+        })
+    })
+    return has;
+}
