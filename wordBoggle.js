@@ -41,10 +41,8 @@ let c_a = ["GO",
 
 function wordBoggle(board, words) {
     let possibleWords = [];
-    // console.log(words)
     words.forEach( word => {
         let lettersPositions = findLettersPositions(word, board)
-        console.log('###################WORD: ', word, '######################')
         canMakeWord(lettersPositions) && possibleWords.push(word);
     })
     possibleWords.sort( (a,b) => a > b ? 1 : -1);
@@ -78,9 +76,7 @@ function canMoveToNextPosition(prevPosition, nextPosition) {
 function satisfiesConstraint(wordIteration) {
     let lastPosition;
     let satisfies = true;
-    // console.log('#######', wordIteration)
     if (arrayHasEqualObj(wordIteration)) {
-        // console.log('not satisfy => equal obj')
         return false;
     }
     wordIteration.forEach( position => {
@@ -89,7 +85,6 @@ function satisfiesConstraint(wordIteration) {
         }
         lastPosition = position;
     })
-    // if (!satisfies) console.log('not satisfy => cant move to next')
     return satisfies;
 }
 
@@ -98,21 +93,40 @@ function getNumOfIterations(lettersPositions) {
     lettersPositions.forEach( (letPositions, i) => {
         iterationsNum *= letPositions.length;
     })
-    // console.log(iterationsNum)
     return iterationsNum;
+}
+
+let getIterationsNum = (arrArr, lastIndex = arrArr.length - 1) => {
+    let iterationsNum = 1;
+    while (lastIndex >= 0) {
+        iterationsNum *= arrArr[lastIndex].length;
+        lastIndex --
+    }
+    return iterationsNum;
+}
+
+let findAllCombinations = (arrArr) => {
+    let iterationsNum = getIterationsNum(arrArr)
+    let combinations = Array(iterationsNum).fill().map( el => Array(arrArr.length).fill())
+    const len= arrArr[0].length;
+    arrArr.forEach( (arr, i) => {
+        let k = 0;
+        while( k < iterationsNum) {
+            let step = getIterationsNum(arrArr, i - 1)
+            arr.forEach(num => {
+                for (let j = 0; j < step; j++) {
+                    combinations[k][i] = num;
+                    k ++
+                }
+            })
+        }
+    })
+    return combinations
 }
 
 function canMakeWord(lettersPositions) {
     let yesWeCan = false;
-    let allPossibleIterations = [];
-    let iterationsNum = getNumOfIterations(lettersPositions);
-    for (let i = 0; i < iterationsNum; i++) {
-        let iterationWord = [];
-        lettersPositions.forEach( (letPositions) => {
-            iterationWord.push(letPositions[i % letPositions.length])
-        })
-        allPossibleIterations.push(iterationWord)
-    }
+    let allPossibleIterations = findAllCombinations(lettersPositions);
     if (arrayHas2EqualArrOfObj(allPossibleIterations)) throw 'array was repeated!!!!'
     allPossibleIterations.forEach( iteration => {
         if (satisfiesConstraint(iteration)) yesWeCan = iteration;
@@ -135,7 +149,6 @@ function withinOneCell(position1, position2) {
 
 function didntMoveThere(nextPosition, previousPositions) {
     let didntMoveBefore = true;
-    // console.log('NEXT**',nextPosition, 'PREV**', previousPositions)
     previousPositions.forEach( pos => {
         if ( 
             pos.row === nextPosition.row &&
@@ -170,7 +183,6 @@ function canMoveToNext(lastPositions, nextPositions, previousPositions) {
             }
         })
     })
-    // console.log('CAN MOVE TO POS: ', canMoveToPositions)
     return canMoveToPositions.length ? canMoveToPositions : false;
 }
 
@@ -192,16 +204,8 @@ function arrayHasEqualObj(arrOfObj) {
             }
         })
     })
-    // console.log(arrOfObj, has)
     return has;
 }
-
-console.log(a_a, wordBoggle(a, a_w))
-// console.log(b_a, wordBoggle(b, b_w))
-// console.log(c_a, wordBoggle(c, c_w))
-// console.log(d_a, wordBoggle(d, d_w))
-
-
 
 //##################
 function arraysOfObjEqual(arr1, arr2) {
@@ -224,3 +228,8 @@ function arrayHas2EqualArrOfObj(arrArr) {
     })
     return has;
 }
+
+console.log(a_a, wordBoggle(a, a_w))
+// console.log(b_a, wordBoggle(b, b_w))
+// console.log(c_a, wordBoggle(c, c_w))
+// console.log(d_a, wordBoggle(d, d_w))
