@@ -1,7 +1,6 @@
 function isAdmissibleOverpayment(prices, notes, x) {
     let totalPriceCart = prices.reduce( (acum, curr) => acum + curr);
     let totalPriceStore = getTotalPriceStore(prices, notes);
-    console.log('x', totalPriceCart - totalPriceStore)
     if (totalPriceCart - totalPriceStore > x + 0.0000000000001) return false;
     return true;
 }
@@ -19,13 +18,11 @@ function getTotalPriceStore(prices, notes) {
                 storePrice = prices[i] / (1 + percent/100)
             : 
                 storePrice = prices[i] / (1 - percent/100);
-            console.log('storePrice: ', storePrice)
             totalPriceStore += storePrice;
         } else {
             totalPriceStore += prices[i] 
         }
     })
-    console.log(totalPriceStore)
     return totalPriceStore
 }
 
